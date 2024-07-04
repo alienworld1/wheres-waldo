@@ -1,4 +1,5 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, Document, Model } from 'mongoose';
+import { Request } from 'express';
 
 interface IPosition {
   x: number;
@@ -10,13 +11,24 @@ interface ITarget {
   position: IPosition;
 }
 
-interface IPhoto {
+interface IPhoto extends Document {
   name: string;
-  targets: ITarget;
+  targets: ITarget[];
 }
 
-const photoSchema = new Schema<IPhoto>({
-  name: { type: String, required: true },
+interface IPhotoMethods {
+  url(): string;
+}
+
+export enum ImageType {
+  main = 'main',
+  preview = 'preview',
+}
+
+type PhotoModel = Model<IPhoto, {}, IPhotoMethods>;
+
+const photoSchema = new Schema<IPhoto, PhotoModel, IPhotoMethods>({
+  name: { type: String, required: true, unique: true },
   targets: [
     {
       name: { type: String, required: true },
@@ -28,7 +40,12 @@ const photoSchema = new Schema<IPhoto>({
   ],
 });
 
-const Photo = model<IPhoto>("Photo", photoSchema);
+photoSchema.method('url', function (imageType: ImageType) {
+  return `/photos/${this.name}/${imageType}`;
+});
+
+type PhotoDocument = Document & IPhoto;
+const Photo = model<IPhoto, PhotoModel>('Photo', photoSchema);
 
 export default Photo;
 export { IPhoto };

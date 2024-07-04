@@ -1,9 +1,12 @@
-import express, { Router, Request, Response } from "express";
+import { Router } from 'express';
+import photoRouter from './photo';
+const router = Router();
 
-const router: Router = express.Router();
-
-router.get("/", (req: Request, res: Response) => {
-  res.status(200).send("hello world");
+router.get('/', (req, res) => {
+  res.json({
+    message: 'Request a resource',
+  });
 });
+router.use('/photo', photoRouter);
 
 export default router;

@@ -4,25 +4,25 @@ import express, {
   Response,
   NextFunction,
   ErrorRequestHandler,
-} from "express";
-import dotenv from "dotenv";
-import createHttpError from "http-errors";
-import * as mongoose from "mongoose";
-import indexRouter from "./routes/index";
+} from 'express';
+import dotenv from 'dotenv';
+import createHttpError from 'http-errors';
+import * as mongoose from 'mongoose';
+import indexRouter from './routes/index';
 
 dotenv.config();
 
 const app: Express = express();
 const port = process.env.port || 3000;
 
-const mongoDB = process.env.MONGODB_URL || "";
-mongoose.set("strictQuery", false);
+const mongoDB = process.env.MONGODB_URL || '';
+mongoose.set('strictQuery', false);
 mongoose.connect(mongoDB).catch(err => console.error(err));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use("/api", indexRouter);
+app.use('/api', indexRouter);
 app.use((req, res, next) => next(createHttpError(404)));
 
 const errorHandler: ErrorRequestHandler = (
@@ -31,7 +31,7 @@ const errorHandler: ErrorRequestHandler = (
   res: Response,
   next: NextFunction,
 ): void => {
-  const error = req.app.get("env") === "development" ? err : {};
+  const error = req.app.get('env') === 'development' ? err : {};
   const status = (err as any).status || 500;
 
   res.status(status).json({
