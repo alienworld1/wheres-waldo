@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import photoRouter from './photo';
+import userRouter from './user';
 const router = Router();
 
 router.get('/', (req, res) => {
@@ -8,5 +9,6 @@ router.get('/', (req, res) => {
   });
 });
 router.use('/photo', photoRouter);
+router.use('/user', userRouter);
 
 export default router;
