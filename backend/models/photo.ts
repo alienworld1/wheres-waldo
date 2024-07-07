@@ -1,5 +1,4 @@
 import { Schema, model, Document, Model } from 'mongoose';
-import { Request } from 'express';
 
 interface IPosition {
   x: number;
@@ -44,7 +43,6 @@ photoSchema.method('url', function (imageType: ImageType) {
   return `/photos/${this.name}/${imageType}`;
 });
 
-type PhotoDocument = Document & IPhoto;
 const Photo = model<IPhoto, PhotoModel>('Photo', photoSchema);
 
 export default Photo;

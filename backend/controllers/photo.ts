@@ -1,14 +1,14 @@
 import asyncHandler from 'express-async-handler';
 import path from 'path';
 
-import Photo, { IPhoto } from '../models/photo';
+import Photo from '../models/photo';
+import createError from '../utils/createError';
 
 export const getPhoto = asyncHandler(async (req, res, next) => {
   const photo = await Photo.findOne({ name: req.params.photo_name }).exec();
 
   if (photo === null) {
-    const err: any = new Error('Photo not found');
-    err.status = 404;
+    const err = createError(404, 'Photo not found');
     return next(err);
   }
 
@@ -21,8 +21,7 @@ export const getPhotoMain = asyncHandler(async (req, res, next) => {
   }).exec();
 
   if (photo === null) {
-    const err: any = new Error('Photo not found');
-    err.status = 404;
+    const err = createError(404, 'Photo not found');
     return next(err);
   }
 
@@ -35,8 +34,7 @@ export const getPhotoPreview = asyncHandler(async (req, res, next) => {
   }).exec();
 
   if (photo === null) {
-    const err: any = new Error('Photo not found');
-    err.status = 404;
+    const err = createError(404, 'Photo not found');
     return next(err);
   }
 
