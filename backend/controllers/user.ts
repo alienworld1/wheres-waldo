@@ -2,18 +2,36 @@ import asyncHandler from 'express-async-handler';
 import { body, validationResult } from 'express-validator';
 
 import User from '../models/user';
+import Photo from '../models/photo';
 import createError from '../utils/createError';
 
 export const createUser = asyncHandler(
   async (req, res, next): Promise<void> => {
+    const photo = await Photo.findById(req.query.photoid).exec();
+    if (photo === null) {
+      const err = createError(404, 'Photo not found');
+      return next(err);
+    }
+
     const user = new User({
       isAnonymous: true,
       startTime: new Date(),
+      photo: photo._id,
     });
 
     res.json(user);
   },
 );
+
+export const getUser = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.params.userid).exec();
+  if (user === null) {
+    const err = createError(404, 'User not found');
+    return next(err);
+  }
+
+  res.json(user);
+});
 
 export const getUserTime = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.params.userid).exec();
