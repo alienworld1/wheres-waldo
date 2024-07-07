@@ -3,11 +3,7 @@ import * as photo from '../controllers/photo';
 
 const router = Router();
 
-router.get('/', (req, res) => {
-  res.json({
-    message: 'Request a resource',
-  });
-});
+router.get('/', photo.getPhotos);
 
 router.get('/:photo_name', photo.getPhoto);
 router.get('/:photo_name/main', photo.getPhotoMain);

@@ -19,6 +19,7 @@ export const createUser = asyncHandler(
       photo: photo._id,
     });
 
+    await user.save();
     res.json(user);
   },
 );
@@ -79,6 +80,6 @@ export const saveToLeaderboard = [
       time: user.getCurrentTime(),
     }).exec();
 
-    res.json(updatedUser);
+    res.json({ message: 'Saved to leaderboard!' });
   }),
 ];

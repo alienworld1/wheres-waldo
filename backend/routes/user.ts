@@ -3,11 +3,11 @@ import * as userController from '../controllers/user';
 
 const router = Router();
 
-router.post('/user', userController.createUser);
+router.post('/', userController.createUser);
 
-router.get('/user/:userid', userController.getUser);
-router.get('/user/:userid/time', userController.getUserTime);
+router.get('/:userid', userController.getUser);
+router.get('/:userid/time', userController.getUserTime);
 
-router.post('/user/:userid', userController.saveToLeaderboard);
+router.post('/:userid', userController.saveToLeaderboard);
 
 export default router;

@@ -56,3 +56,8 @@ export const getLeaderboardUsers = asyncHandler(async (req, res, next) => {
 
   res.json(users ?? []);
 });
+
+export const getPhotos = asyncHandler(async (req, res, next) => {
+  const photos = await Photo.find().exec();
+  res.json(photos);
+});
