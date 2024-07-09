@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 import createHttpError from 'http-errors';
 import * as mongoose from 'mongoose';
 import indexRouter from './routes/index';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ mongoose.connect(mongoDB).catch(err => console.error(err));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(cors({ origin: process.env.FRONTEND_URL }));
 
 app.use('/api', indexRouter);
 app.use((req, res, next) => next(createHttpError(404)));
