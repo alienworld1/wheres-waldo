@@ -42,6 +42,26 @@ export const getPhotoPreview = asyncHandler(async (req, res, next) => {
   res.sendFile(path.resolve(`static/images/${photo.name}/preview.jpg`));
 });
 
+export const getPhotoTarget = asyncHandler(async (req, res, next) => {
+  const { photo_name, target_name } = req.params;
+
+  const photo = await Photo.findOne({ name: photo_name }).exec();
+
+  if (photo === null) {
+    const err = createError(404, 'Photo not found');
+    return next(err);
+  }
+
+  if (photo.targets.some(target => target.name === target_name)) {
+    res.sendFile(
+      path.resolve(`static/images/${photo.name}/targets/${target_name}.png`),
+    );
+  } else {
+    const err = createError(404, 'Target not found');
+    return next(err);
+  }
+});
+
 export const getLeaderboardUsers = asyncHandler(async (req, res, next) => {
   const photo = await Photo.findOne({ name: req.params.photo_name }).exec();
 
