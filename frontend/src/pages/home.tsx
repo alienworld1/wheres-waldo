@@ -2,11 +2,12 @@ import { TailSpin } from 'react-loading-icons';
 
 import { fetchPhotos, useFetch } from '../apis/backend-apis';
 import { Photo } from '../types/models';
+import { Link } from 'react-router-dom';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
 function Home() {
-  const { response, error, loading } = useFetch(fetchPhotos);
+  const { response, error, loading } = useFetch<never, Photo[]>(fetchPhotos);
 
   return (
     <main className="p-4 flex flex-col h-screen">
@@ -19,9 +20,10 @@ function Home() {
         ) : (
           <article className="flex-1 flex justify-center gap-2">
             {response?.map((data: Photo) => (
-              <div
+              <Link
                 className="flex flex-col max-w-sm px-4 py-3 gap-2 bg-blue-400 rounded shadow hover:scale-110 transition-transform duration-500 cursor-pointer"
                 key={data._id}
+                to={`/photo/${data.name}`}
               >
                 <img
                   src={`${apiUrl}/photo/${data.name}/preview`}
@@ -30,7 +32,7 @@ function Home() {
                 <p className="text-center font-medium text-lg">
                   {data.userFriendlyName}
                 </p>
-              </div>
+              </Link>
             ))}
           </article>
         )}
