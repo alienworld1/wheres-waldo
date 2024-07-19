@@ -14,6 +14,8 @@ interface IPhoto extends Document {
   name: string;
   targets: ITarget[];
   userFriendlyName: string;
+  width: number;
+  height: number;
 }
 
 interface IPhotoMethods {
@@ -39,6 +41,8 @@ const photoSchema = new Schema<IPhoto, PhotoModel, IPhotoMethods>({
     },
   ],
   userFriendlyName: { type: String, required: true },
+  width: { type: Number, required: true },
+  height: { type: Number, required: true },
 });
 
 photoSchema.method('url', function (imageType: ImageType) {

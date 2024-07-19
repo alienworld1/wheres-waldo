@@ -1,4 +1,4 @@
-interface Position {
+export interface Position {
   x: number;
   y: number;
 }
@@ -15,4 +15,6 @@ export interface Photo {
   userFriendlyName: string;
   _id: string;
   __v: never;
+  width: number;
+  height: number;
 }
