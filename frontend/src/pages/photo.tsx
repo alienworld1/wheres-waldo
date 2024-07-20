@@ -6,6 +6,10 @@ import { TailSpin } from 'react-loading-icons';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
+function capitalizeString(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 function PhotoPage() {
   const { photoName } = useParams();
 
@@ -54,7 +58,7 @@ function PhotoPage() {
                 <h2 className="mx-4">Targets: </h2>
                 <ul className="flex gap-4">
                   {response?.targets.map(target => (
-                    <li>
+                    <li key={target.name}>
                       <img
                         src={`${apiUrl}/photo/${photoName}/targets/${target.name}`}
                         className="w-16 h-16"
@@ -76,13 +80,40 @@ function PhotoPage() {
                   className="cursor-pointer max-w-full block"
                 />
                 {clickPosition && (
-                  <div
-                    className="absolute w-[30px] h-[30px] bg-red-600 opacity-50 pointer-events-none"
-                    style={{
-                      left: `${clickPosition.x - 15}px`,
-                      top: `${clickPosition.y - 15}px`,
-                    }}
-                  ></div>
+                  <>
+                    <div
+                      className="absolute w-[30px] h-[30px] bg-red-600 opacity-50 pointer-events-none"
+                      style={{
+                        left: `${clickPosition.x - 15}px`,
+                        top: `${clickPosition.y - 15}px`,
+                      }}
+                    ></div>
+                    <div
+                      className="absolute p-2 bg-gray-900 text-gray-50 rounded shadow"
+                      style={{
+                        left: `${clickPosition.x + 20}px`,
+                        top: `${clickPosition.y - 15}px`,
+                      }}
+                    >
+                      <ul className="list-none">
+                        {response?.targets.map(target => (
+                          <li
+                            key={target.name}
+                            className="px-4 py-2 hover:bg-gray-500 cursor-pointer transition-colors"
+                          >
+                            <img
+                              src={`${apiUrl}/photo/${photoName}/targets/${target.name}`}
+                              alt={response?.userFriendlyName}
+                              className="w-8 h-8 inline"
+                            />
+                            <span className="ml-2 text-lg">
+                              {capitalizeString(target.name)}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </>
                 )}
               </div>
             </article>
