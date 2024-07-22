@@ -1,10 +1,21 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, lazy, Suspense } from 'react';
 import { useParams } from 'react-router-dom';
 import { useFetch, getPhoto } from '../apis/backend-apis';
 import { Photo, Position } from '../types/models';
 import { TailSpin } from 'react-loading-icons';
 
-const apiUrl = import.meta.env.VITE_API_URL;
+const apiUrl: string = import.meta.env.VITE_API_URL;
+
+const LazyImage = lazy(() => import('../components/lazyimage'));
+
+interface ClientTarget {
+  name: string;
+  isFound: boolean;
+}
+
+interface CachedImages {
+  [key: string]: string;
+}
 
 function capitalizeString(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -14,16 +25,44 @@ function PhotoPage() {
   const { photoName } = useParams();
 
   const [clickPosition, setClickPosition] = useState<Position | null>(null);
+  const [targets, setTargets] = useState<ClientTarget[] | null>(null);
+  const [cachedImages, setCachedImages] = useState<CachedImages>({});
   const containerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { response, loading, error } = useFetch<string, Photo>(
     getPhoto,
     photoName,
   );
 
-  const boxSize = 30;
+  useEffect(() => {
+    if (response) {
+      const imagesToCache = [
+        `${apiUrl}/photo/${photoName}/main`,
+        ...response.targets.map(
+          t => `${apiUrl}/photo/${photoName}/targets/${t.name}`,
+        ),
+      ];
 
-  const handleClick = (event: React.MouseEvent<HTMLImageElement>) => {
+      imagesToCache.forEach(src => {
+        const img = new Image();
+        img.src = src;
+        setCachedImages(prev => ({ ...prev, [src]: src }));
+      });
+    }
+  }, [response, photoName]);
+
+  useEffect(() => {
+    if (response) {
+      const targets: ClientTarget[] = response.targets.map(target => ({
+        name: target.name,
+        isFound: false,
+      }));
+      setTargets(targets);
+    }
+  }, [response]);
+
+  const handleImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
     if (!containerRef.current) return;
 
     const containerRect = containerRef.current.getBoundingClientRect();
@@ -31,16 +70,45 @@ function PhotoPage() {
     const x = event.clientX - containerRect.left;
     const y = event.clientY - containerRect.top;
     setClickPosition({ x, y });
+  };
 
-    const halfBox = boxSize / 2;
-    const corners = {
-      topLeft: { x: x - halfBox, y: y - halfBox },
-      topRight: { x: x + halfBox, y: y - halfBox },
-      bottomLeft: { x: x - halfBox, y: y + halfBox },
-      bottomRight: { x: x + halfBox, y: y + halfBox },
-    };
+  const handleDropdownClick = (event: React.MouseEvent<HTMLLIElement>) => {
+    if (
+      !dropdownRef.current ||
+      !containerRef.current ||
+      !clickPosition ||
+      !response ||
+      !targets
+    )
+      return;
 
-    console.log(corners);
+    const { x, y } = clickPosition;
+
+    const targetName = event.currentTarget.id;
+    const target = response.targets.find(t => t.name === targetName);
+    if (!target) return;
+
+    const clientX =
+      (target.position.x / response.width) * containerRef.current.clientWidth;
+    const clientY =
+      (target.position.y / response.height) * containerRef.current.clientHeight;
+
+    console.log({ clientX, clientY });
+    console.log({ x, y });
+
+    if (
+      x - 15 < clientX &&
+      clientX < x + 15 &&
+      y - 15 < clientY &&
+      clientY < y + 15
+    ) {
+      const newTargets = targets.filter(t => t.name != targetName);
+      newTargets.push({ name: targetName, isFound: true });
+      setTargets(newTargets);
+      console.log(newTargets);
+    } else {
+      console.log('Incorrect!');
+    }
   };
 
   return (
@@ -72,13 +140,18 @@ function PhotoPage() {
               <div
                 ref={containerRef}
                 className="relative inline-block"
-                onClick={handleClick}
+                onClick={handleImageClick}
               >
-                <img
-                  src={`${apiUrl}/photo/${photoName}/main`}
-                  alt={response?.userFriendlyName}
-                  className="cursor-pointer max-w-full block"
-                />
+                <Suspense fallback={<TailSpin />}>
+                  <LazyImage
+                    src={
+                      cachedImages[`${apiUrl}/photo/${photoName}/main`] ??
+                      `${apiUrl}/photo/${photoName}/main`
+                    }
+                    alt={response?.userFriendlyName}
+                    className="cursor-pointer max-w-full block"
+                  />
+                </Suspense>
                 {clickPosition && (
                   <>
                     <div
@@ -94,12 +167,15 @@ function PhotoPage() {
                         left: `${clickPosition.x + 20}px`,
                         top: `${clickPosition.y - 15}px`,
                       }}
+                      ref={dropdownRef}
                     >
                       <ul className="list-none">
                         {response?.targets.map(target => (
                           <li
                             key={target.name}
                             className="px-4 py-2 hover:bg-gray-500 cursor-pointer transition-colors"
+                            id={target.name}
+                            onClick={handleDropdownClick}
                           >
                             <img
                               src={`${apiUrl}/photo/${photoName}/targets/${target.name}`}
