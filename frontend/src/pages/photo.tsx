@@ -84,9 +84,7 @@ function PhotoPage() {
     [],
   );
 
-  const handleDropdownClick = async (
-    event: React.MouseEvent<HTMLLIElement>,
-  ) => {
+  const handleDropdownClick = (event: React.MouseEvent<HTMLLIElement>) => {
     if (
       !dropdownRef.current ||
       !containerRef.current ||
@@ -139,11 +137,11 @@ function PhotoPage() {
               <div className="flex items-center">
                 <h2 className="mx-4">Targets: </h2>
                 <ul className="flex gap-4">
-                  {response?.targets.map(target => (
-                    <li key={target.name}>
+                  {targets?.map(target => (
+                    <li key={target.name} className="relative">
                       <img
                         src={`${apiUrl}/photo/${photoName}/targets/${target.name}`}
-                        className="w-16 h-16"
+                        className={`w-16 h-16 ${target.isFound ? 'grayscale' : ''}`}
                       ></img>
                     </li>
                   ))}
@@ -181,23 +179,25 @@ function PhotoPage() {
                       ref={dropdownRef}
                     >
                       <ul className="list-none">
-                        {response?.targets.map(target => (
-                          <li
-                            key={target.name}
-                            className="px-4 py-2 hover:bg-gray-500 cursor-pointer transition-colors"
-                            id={target.name}
-                            onClick={handleDropdownClick}
-                          >
-                            <img
-                              src={`${apiUrl}/photo/${photoName}/targets/${target.name}`}
-                              alt={response?.userFriendlyName}
-                              className="w-8 h-8 inline"
-                            />
-                            <span className="ml-2 text-lg">
-                              {capitalizeString(target.name)}
-                            </span>
-                          </li>
-                        ))}
+                        {targets!
+                          .filter(t => t.isFound === false)
+                          .map(target => (
+                            <li
+                              key={target.name}
+                              className="px-4 py-2 hover:bg-gray-500 cursor-pointer transition-colors"
+                              id={target.name}
+                              onClick={handleDropdownClick}
+                            >
+                              <img
+                                src={`${apiUrl}/photo/${photoName}/targets/${target.name}`}
+                                alt={response?.userFriendlyName}
+                                className="w-8 h-8 inline"
+                              />
+                              <span className="ml-2 text-lg">
+                                {capitalizeString(target.name)}
+                              </span>
+                            </li>
+                          ))}
                       </ul>
                     </div>
                   </>
