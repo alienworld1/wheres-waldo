@@ -1,6 +1,14 @@
-import React, { useEffect, useRef, useState, lazy, Suspense } from 'react';
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  lazy,
+  Suspense,
+  useMemo,
+  useCallback,
+} from 'react';
 import { useParams } from 'react-router-dom';
-import { useFetch, getPhoto } from '../apis/backend-apis';
+import { getPhoto } from '../apis/backend-apis';
 import { Photo, Position } from '../types/models';
 import { TailSpin } from 'react-loading-icons';
 
@@ -13,66 +21,72 @@ interface ClientTarget {
   isFound: boolean;
 }
 
-interface CachedImages {
-  [key: string]: string;
-}
-
 function capitalizeString(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 function PhotoPage() {
-  const { photoName } = useParams();
+  const { photoName } = useParams<{ photoName: string }>();
 
   const [clickPosition, setClickPosition] = useState<Position | null>(null);
   const [targets, setTargets] = useState<ClientTarget[] | null>(null);
-  const [cachedImages, setCachedImages] = useState<CachedImages>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { response, loading, error } = useFetch<string, Photo>(
-    getPhoto,
-    photoName,
-  );
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<Error | null>(null);
+  const [response, setResponse] = useState<Photo | null>(null);
 
-  useEffect(() => {
-    if (response) {
-      const imagesToCache = [
-        `${apiUrl}/photo/${photoName}/main`,
-        ...response.targets.map(
-          t => `${apiUrl}/photo/${photoName}/targets/${t.name}`,
-        ),
-      ];
-
-      imagesToCache.forEach(src => {
-        const img = new Image();
-        img.src = src;
-        setCachedImages(prev => ({ ...prev, [src]: src }));
-      });
+  const fetchPhoto = useCallback(async () => {
+    if (!photoName) return null;
+    try {
+      setLoading(true);
+      const data = await getPhoto(photoName);
+      setResponse(data);
+      setLoading(false);
+      return data;
+    } catch (err) {
+      setLoading(false);
+      setError(err instanceof Error ? err : new Error('An error occured'));
+      return null;
     }
-  }, [response, photoName]);
+  }, [photoName]);
+
+  useEffect(() => {
+    fetchPhoto();
+  }, [fetchPhoto]);
 
   useEffect(() => {
     if (response) {
-      const targets: ClientTarget[] = response.targets.map(target => ({
+      const newTargets: ClientTarget[] = response.targets.map(target => ({
         name: target.name,
         isFound: false,
       }));
-      setTargets(targets);
+      setTargets(newTargets);
     }
   }, [response]);
 
-  const handleImageClick = (event: React.MouseEvent<HTMLImageElement>) => {
-    if (!containerRef.current) return;
+  const mainImageUrl = useMemo(
+    () => (photoName ? `${apiUrl}/photo/${photoName}/main` : null),
+    [photoName],
+  );
 
-    const containerRect = containerRef.current.getBoundingClientRect();
+  const handleImageClick = useCallback(
+    (event: React.MouseEvent<HTMLImageElement>) => {
+      if (!containerRef.current) return;
 
-    const x = event.clientX - containerRect.left;
-    const y = event.clientY - containerRect.top;
-    setClickPosition({ x, y });
-  };
+      const containerRect = containerRef.current.getBoundingClientRect();
 
-  const handleDropdownClick = (event: React.MouseEvent<HTMLLIElement>) => {
+      const x = event.clientX - containerRect.left;
+      const y = event.clientY - containerRect.top;
+      setClickPosition({ x, y });
+    },
+    [],
+  );
+
+  const handleDropdownClick = async (
+    event: React.MouseEvent<HTMLLIElement>,
+  ) => {
     if (
       !dropdownRef.current ||
       !containerRef.current ||
@@ -144,10 +158,7 @@ function PhotoPage() {
               >
                 <Suspense fallback={<TailSpin />}>
                   <LazyImage
-                    src={
-                      cachedImages[`${apiUrl}/photo/${photoName}/main`] ??
-                      `${apiUrl}/photo/${photoName}/main`
-                    }
+                    src={mainImageUrl!}
                     alt={response?.userFriendlyName}
                     className="cursor-pointer max-w-full block"
                   />
