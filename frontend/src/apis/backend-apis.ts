@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Photo } from '../types/models';
+import { Photo, User } from '../types/models';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -30,6 +30,21 @@ export const getPhoto: ApiCallback<string, Photo> = async (
   photoName: string,
 ): Promise<Photo> => {
   const response = await fetch(`${apiUrl}/photo/${photoName}`, {
+    mode: 'cors',
+  });
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message);
+  } else {
+    return data;
+  }
+};
+
+export const fetchLeaderboard: ApiCallback<string, User[]> = async (
+  photoName: string,
+): Promise<User[]> => {
+  const response = await fetch(`${apiUrl}/photo/${photoName}/leaderboard`, {
     mode: 'cors',
   });
   const data = await response.json();

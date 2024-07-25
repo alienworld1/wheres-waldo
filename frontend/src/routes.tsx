@@ -10,6 +10,7 @@ const routes = [
     path: '/photo/:photoName',
     element: <Pages.PhotoPage />,
   },
+  { path: '/leaderboard/:photoName', element: <Pages.Leaderboard /> },
 ];
 
 export default routes;

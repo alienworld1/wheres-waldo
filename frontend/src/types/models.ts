@@ -18,3 +18,13 @@ export interface Photo {
   width: number;
   height: number;
 }
+
+export interface User {
+  _id: string;
+  __v: never;
+  isAnonymous: boolean;
+  name: string;
+  startTime: string;
+  photo: string;
+  time: number;
+}
