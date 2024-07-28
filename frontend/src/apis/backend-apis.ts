@@ -70,6 +70,24 @@ export const createUser: ApiCallback<Photo, User> = async (photo: Photo) => {
   }
 };
 
+export async function saveUser(name: string, user: User): Promise<void> {
+  const response = await fetch(`${apiUrl}/user/${user._id}`, {
+    mode: 'cors',
+    method: 'POST',
+    body: JSON.stringify({ name }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(
+      data.message ??
+        data[0].msg ??
+        'An error occured while saving user to leaderboard',
+    );
+  }
+}
+
 export function useFetch<Params, ResponseType>(
   callback: ApiCallback<Params, ResponseType>,
   argument?: Params,
