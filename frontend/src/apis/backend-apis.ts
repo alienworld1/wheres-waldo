@@ -56,6 +56,20 @@ export const fetchLeaderboard: ApiCallback<string, User[]> = async (
   }
 };
 
+export const createUser: ApiCallback<Photo, User> = async (photo: Photo) => {
+  const response = await fetch(`${apiUrl}/user?photoid=${photo._id}`, {
+    mode: 'cors',
+    method: 'POST',
+  });
+  const user = await response.json();
+
+  if (!response.ok) {
+    throw new Error(user.message);
+  } else {
+    return user;
+  }
+};
+
 export function useFetch<Params, ResponseType>(
   callback: ApiCallback<Params, ResponseType>,
   argument?: Params,

@@ -8,9 +8,12 @@ import React, {
   useCallback,
 } from 'react';
 import { useParams } from 'react-router-dom';
-import { getPhoto } from '../apis/backend-apis';
-import { Photo, Position } from '../types/models';
+import { createUser, getPhoto } from '../apis/backend-apis';
+import { Photo, Position, User } from '../types/models';
 import { TailSpin } from 'react-loading-icons';
+import { differenceInMilliseconds } from 'date-fns';
+
+import formatTime from '../utils/formatTime';
 
 const apiUrl: string = import.meta.env.VITE_API_URL;
 
@@ -36,6 +39,9 @@ function PhotoPage() {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [response, setResponse] = useState<Photo | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
 
   const fetchPhoto = useCallback(async () => {
     if (!photoName) return null;
@@ -51,6 +57,33 @@ function PhotoPage() {
       return null;
     }
   }, [photoName]);
+
+  useEffect(() => {
+    if (response) {
+      const userInit = async () => {
+        try {
+          const user = await createUser(response);
+          setUser(user);
+        } catch (err) {
+          setError(err instanceof Error ? err : new Error('An error occured'));
+        }
+      };
+
+      userInit();
+    }
+  }, [response]);
+
+  useEffect(() => {
+    if (user) {
+      const interval = setInterval(() => {
+        const now = new Date();
+        const timeDifference = differenceInMilliseconds(now, user.startTime);
+        setElapsedTime(timeDifference);
+      });
+
+      return () => clearInterval(interval);
+    }
+  }, [user]);
 
   useEffect(() => {
     fetchPhoto();
@@ -134,6 +167,10 @@ function PhotoPage() {
           <>
             <header className="bg-blue-400 py-4 px-12 text-2xl font-semibold flex justify-between items-center">
               <h1>{response?.userFriendlyName}</h1>
+              <div className="flex">
+                <h2 className="mx-4">Time Elapsed:</h2>
+                <p>{formatTime(elapsedTime)}</p>
+              </div>
               <div className="flex items-center">
                 <h2 className="mx-4">Targets: </h2>
                 <ul className="flex gap-4">
