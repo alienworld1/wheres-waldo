@@ -200,7 +200,7 @@ function PhotoPage() {
                 </ul>
               </div>
             </header>
-            <article className="flex-1">
+            <article className="flex-1 flex items-center justify-center">
               <div
                 ref={containerRef}
                 className="relative inline-block"

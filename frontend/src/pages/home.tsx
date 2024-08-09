@@ -19,7 +19,7 @@ function Home() {
           <div className="text-red-600">{error.message}</div>
         ) : (
           <>
-            <article className="flex-1 flex justify-center gap-2">
+            <article className="flex-1 flex justify-center gap-12">
               {response?.map((data: Photo) => (
                 <Link
                   className="flex flex-col max-w-sm px-4 py-3 gap-2 bg-blue-400 rounded shadow hover:scale-110 transition-transform duration-500 cursor-pointer"
@@ -29,6 +29,7 @@ function Home() {
                   <img
                     src={`${apiUrl}/photo/${data.name}/preview`}
                     alt={data.name}
+                    className="w-80 h-40"
                   />
                   <p className="text-center font-medium text-lg">
                     {data.userFriendlyName}
