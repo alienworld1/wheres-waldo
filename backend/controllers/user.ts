@@ -77,9 +77,21 @@ export const saveToLeaderboard = [
     const updatedUser = await User.findByIdAndUpdate(req.params.userid, {
       isAnonymous: false,
       name: req.body.name,
-      time: user.getCurrentTime(),
     }).exec();
 
     res.json({ message: 'Saved to leaderboard!' });
   }),
 ];
+
+export const recordTime = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.params.userid).exec();
+  if (user === null) {
+    const err = createError(404, 'User not found');
+    return next(err);
+  }
+
+  const time = user.getCurrentTime();
+  await User.findByIdAndUpdate(req.params.userid, { time }).exec();
+
+  res.json({ message: 'Time saved to leaderboard', time });
+});

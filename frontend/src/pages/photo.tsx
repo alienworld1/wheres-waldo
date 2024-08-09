@@ -13,6 +13,10 @@ import { Photo, Position, User } from '../types/models';
 import { TailSpin } from 'react-loading-icons';
 import { differenceInMilliseconds } from 'date-fns';
 
+import LeaderboardForm, {
+  LeaderboardFormRef,
+} from '../components/leaderboardForm';
+
 import formatTime from '../utils/formatTime';
 
 const apiUrl: string = import.meta.env.VITE_API_URL;
@@ -35,6 +39,7 @@ function PhotoPage() {
   const [targets, setTargets] = useState<ClientTarget[] | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const leaderboardFormRef = useRef<LeaderboardFormRef>(null);
 
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
@@ -138,9 +143,6 @@ function PhotoPage() {
     const clientY =
       (target.position.y / response.height) * containerRef.current.clientHeight;
 
-    console.log({ clientX, clientY });
-    console.log({ x, y });
-
     if (
       x - 15 < clientX &&
       clientX < x + 15 &&
@@ -149,10 +151,23 @@ function PhotoPage() {
     ) {
       const newTargets = targets.filter(t => t.name != targetName);
       newTargets.push({ name: targetName, isFound: true });
+
+      if (newTargets.filter(t => t.isFound === false).length === 0) {
+        saveResults();
+      }
+
       setTargets(newTargets);
-      console.log(newTargets);
-    } else {
-      console.log('Incorrect!');
+    }
+  };
+
+  const saveResults = async () => {
+    try {
+      await fetch(`${apiUrl}/${user!._id}/save`, {
+        method: 'POST',
+      });
+      leaderboardFormRef.current?.open();
+    } catch {
+      return;
     }
   };
 
@@ -240,6 +255,13 @@ function PhotoPage() {
                   </>
                 )}
               </div>
+              {user && (
+                <LeaderboardForm
+                  ref={leaderboardFormRef}
+                  user={user!}
+                  photoName={photoName!}
+                />
+              )}
             </article>
           </>
         )}

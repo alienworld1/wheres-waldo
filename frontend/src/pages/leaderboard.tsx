@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { TailSpin } from 'react-loading-icons';
 
 import Entry from '../components/entry';
@@ -39,8 +39,11 @@ export default function Leaderboard() {
       ) : (
         leaderboard && (
           <>
-            <header className="bg-blue-400 p-4 text-2xl font-semibold">
-              Leaderboard
+            <header className="bg-blue-400 p-4 text-2xl font-semibold flex justify-between">
+              <h1>Leaderboard</h1>
+              <Link to="/" className="hover:text-blue-900">
+                Home
+              </Link>
             </header>
             <div className="flex-1 flex justify-center items-center">
               <div className="overflow-x-auto">
